@@ -1,0 +1,95 @@
+{
+  "skill_name": "life-navigator-agent",
+  "version": "1.0.0",
+  "description": "Tests for realistic non-tech user document situations. Evaluates plain-language quality, urgency accuracy, action plan completeness, scam detection, and special mode handling.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "eviction-pay-or-quit-crisis",
+      "prompt": "Hi, I got this letter from my landlord today and I'm really scared. It says '3-DAY NOTICE TO PAY RENT OR QUIT. You are required to pay rent in the amount of $1,450 within 3 days or vacate the premises.' I have two kids. I don't know what to do.",
+      "expected_behavior": "Must detect HSG-03 (Pay or Quit). Must set RED urgency. Must activate crisis mode. Must acknowledge the stress before giving information. Must NOT start with a technical explanation. Must provide: 211 call instruction, legal aid reference, specific steps. Must explain what 'unlawful detainer' means if mentioned. Must NOT overwhelm with too much at once.",
+      "assertions": [
+        { "id": "detects-pay-or-quit", "text": "Correctly identifies as Pay or Quit / eviction warning", "type": "contains_concept", "expected": "eviction, pay or quit, 3-day" },
+        { "id": "red-urgency", "text": "Flags as URGENT / RED", "type": "contains_concept", "expected": "urgent, immediately, today" },
+        { "id": "emotional-acknowledgment", "text": "Acknowledges the stress before launching into information", "type": "contains_concept", "expected": "stressful, understand, frightening, scary, help" },
+        { "id": "211-mentioned", "text": "Mentions 211 for emergency rental assistance", "type": "contains_text", "expected": "211" },
+        { "id": "legal-aid-mentioned", "text": "Mentions legal aid or free legal help", "type": "contains_concept", "expected": "legal aid, legal help, free legal" },
+        { "id": "dont-ignore", "text": "Warns not to ignore the notice", "type": "contains_concept", "expected": "do not ignore, don't ignore, must respond" },
+        { "id": "numbered-steps", "text": "Provides numbered action steps", "type": "contains_concept", "expected": "1., 2., 3." },
+        { "id": "no-jargon-unexplained", "text": "Any legal terms used are explained in plain language", "type": "contains_concept", "expected": "means, in other words, that is" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "irs-final-notice-levy",
+      "prompt": "I got a letter from the IRS that says 'FINAL NOTICE — NOTICE OF INTENT TO LEVY AND NOTICE OF YOUR RIGHT TO A HEARING'. It says I owe $8,340 and they will seize my property. I'm terrified. What does this mean?",
+      "expected_behavior": "Must detect FIN-04 (IRS Final Notice). Must set RED urgency. Must explain 'levy' in plain English. Must mention the 30-day CDP hearing right prominently. Must provide Taxpayer Advocate Service (TAS) number. Must be reassuring but honest about urgency.",
+      "assertions": [
+        { "id": "detects-irs-levy", "text": "Identifies as IRS final notice / intent to levy", "type": "contains_concept", "expected": "IRS, levy, final notice" },
+        { "id": "explains-levy", "text": "Explains what 'levy' means in plain English", "type": "contains_concept", "expected": "seize, take, wages, bank account, property" },
+        { "id": "cdp-hearing-right", "text": "Mentions the 30-day CDP hearing right that stops the levy", "type": "contains_concept", "expected": "30 days, hearing, CDP, collection due process, stops" },
+        { "id": "tas-mentioned", "text": "Mentions Taxpayer Advocate Service", "type": "contains_concept", "expected": "Taxpayer Advocate, TAS, 1-877" },
+        { "id": "reassuring-but-honest", "text": "Acknowledges urgency but reassures options exist", "type": "contains_concept", "expected": "options, can, help, don't panic, steps" },
+        { "id": "payment-plan-mentioned", "text": "Mentions payment plan option", "type": "contains_concept", "expected": "payment plan, installment, IRS" }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "medicare-eob-not-a-bill",
+      "prompt": "My mom got this paper in the mail from Medicare. It says 'Medicare Summary Notice' at the top. It lists a bunch of charges and says 'Amount charged: $3,200' and 'Medicare paid: $2,560'. She thinks she owes $3,200 and is really worried. She's 78.",
+      "expected_behavior": "Must detect MED-03 (Medicare MSN). Must set INFO urgency. Must activate senior mode. Must immediately and clearly explain this is NOT a bill. Must explain the EOB/MSN concept simply. Must reassure the user. Should mention SHIP as a resource. Should distinguish between what Medicare paid and what mom might owe.",
+      "assertions": [
+        { "id": "detects-medicare-msn", "text": "Identifies as Medicare Summary Notice", "type": "contains_concept", "expected": "Medicare Summary Notice, MSN, Medicare" },
+        { "id": "not-a-bill-clear", "text": "Very clearly states this is NOT a bill", "type": "contains_concept", "expected": "not a bill, is not a bill, NOT a bill" },
+        { "id": "reassuring", "text": "Is reassuring to the senior", "type": "contains_concept", "expected": "don't worry, no need to worry, she doesn't owe, not responsible for $3,200" },
+        { "id": "explains-what-she-owes", "text": "Explains what mom's actual responsibility might be", "type": "contains_concept", "expected": "responsible for, patient responsibility, might owe, deductible, coinsurance" },
+        { "id": "senior-resources", "text": "Mentions SHIP or senior-specific Medicare help", "type": "contains_concept", "expected": "SHIP, 1-800-MEDICARE, Medicare counseling, free help" },
+        { "id": "simple-language", "text": "Uses very simple language appropriate for a 78-year-old", "type": "contains_concept", "expected": "plain, simple words throughout" }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "scam-detection-fake-irs",
+      "prompt": "I got a voicemail saying it's from the IRS and they're going to arrest me if I don't call back right away. Then I got a letter that says I owe $2,300 in back taxes and I need to pay in Google Play gift cards immediately. Is this real?",
+      "expected_behavior": "Must immediately and clearly identify this as a SCAM. Must tell user not to call back, not to buy gift cards, not to give any information. Must provide the real IRS number to verify. Must explain that the IRS never asks for gift cards. Should be warm and reassuring — the user is scared.",
+      "assertions": [
+        { "id": "identifies-scam", "text": "Clearly identifies this as a scam", "type": "contains_concept", "expected": "scam, fraud, fake, not real, not the IRS" },
+        { "id": "no-gift-cards", "text": "Explains IRS never asks for gift cards", "type": "contains_concept", "expected": "gift cards, never, IRS does not" },
+        { "id": "do-not-call-back", "text": "Warns not to call the number in the letter/voicemail", "type": "contains_concept", "expected": "do not call, don't call, not call back" },
+        { "id": "real-irs-number", "text": "Provides the real IRS number", "type": "contains_text", "expected": "1-800-829-1040" },
+        { "id": "reassuring", "text": "Is reassuring — the user has not been arrested and will not be", "type": "contains_concept", "expected": "not going to arrest, won't arrest, safe, don't be scared" },
+        { "id": "report-scam", "text": "Suggests reporting the scam", "type": "contains_concept", "expected": "report, FTC, ftc.gov, reportfraud" }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "insurance-denial-appeal",
+      "prompt": "My insurance denied my surgery. The letter says 'not medically necessary'. I need this surgery — my doctor ordered it. It says I have the right to appeal within 60 days. What do I do? I've never done an appeal before.",
+      "expected_behavior": "Must detect MED-05 (Insurance Denial). Must set YELLOW urgency. Must explain 'not medically necessary' in plain English. Must walk through the appeal process step by step. Must mention doctor's letter of medical necessity. Must mention External Review right. Must write in a calm, empowering tone — the user can fight this.",
+      "assertions": [
+        { "id": "detects-denial", "text": "Identifies as insurance denial/appeal situation", "type": "contains_concept", "expected": "denial, denied, appeal, insurance" },
+        { "id": "explains-not-medically-necessary", "text": "Explains what 'not medically necessary' means in plain English", "type": "contains_concept", "expected": "insurance says, they think, disagree, appeal" },
+        { "id": "60-day-deadline", "text": "Highlights the 60-day appeal deadline", "type": "contains_concept", "expected": "60 days, deadline, appeal by" },
+        { "id": "doctors-letter", "text": "Mentions getting a letter of medical necessity from the doctor", "type": "contains_concept", "expected": "doctor, letter, medical necessity, letter of" },
+        { "id": "external-review", "text": "Mentions External Review as a right", "type": "contains_concept", "expected": "external review, independent review" },
+        { "id": "step-by-step", "text": "Provides step-by-step appeal instructions", "type": "contains_concept", "expected": "1., 2., step, first, then" },
+        { "id": "empowering-tone", "text": "Empowering tone — you can appeal and win", "type": "contains_concept", "expected": "can appeal, have the right, often successful, fight" }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "uscis-rfe-immigrant-english-not-first",
+      "prompt": "Hello I get letter from USCIS. It say 'Request for Evidence' about my green card application. They want me to send more papers but I don't understand what papers. The letter has many difficult words. I am very scared they will reject my application. My English not very good.",
+      "expected_behavior": "Must detect GOV-12 (USCIS/Immigration Notice). Must activate immigrant mode. Must use extremely simple sentence structure. Must explain what an RFE is and that it is common and does not mean rejection. Must strongly recommend an immigration attorney or accredited representative. Must provide Immigration Advocates Network. Must NOT overwhelm with jargon.",
+      "assertions": [
+        { "id": "detects-uscis-rfe", "text": "Identifies as USCIS Request for Evidence", "type": "contains_concept", "expected": "USCIS, Request for Evidence, RFE, green card" },
+        { "id": "rfe-is-common", "text": "Explains RFE is common and not a rejection", "type": "contains_concept", "expected": "common, normal, not rejected, not denied, many people" },
+        { "id": "simple-language", "text": "Uses very simple sentence structure throughout", "type": "contains_concept", "expected": "short sentences, simple words" },
+        { "id": "recommends-attorney", "text": "Strongly recommends immigration attorney or accredited representative", "type": "contains_concept", "expected": "attorney, lawyer, legal help, accredited" },
+        { "id": "immigrant-advocates", "text": "Mentions immigrationadvocates.org or free immigration help", "type": "contains_concept", "expected": "immigrationadvocates, free immigration, legal aid" },
+        { "id": "deadline-warning", "text": "Warns about the RFE response deadline", "type": "contains_concept", "expected": "deadline, respond by, days to respond, must reply" },
+        { "id": "reassuring", "text": "Reassures the user they can respond and the case can continue", "type": "contains_concept", "expected": "can respond, will have a chance, don't give up, okay" }
+      ]
+    }
+  ]
+}
